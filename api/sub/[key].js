@@ -7,18 +7,16 @@ export default async function handler(req, res) {
 
   let target;
 
-  // WX ile başlayanlar → VPN
   if (key.startsWith("WX")) {
     target = `https://standartuserrtm.pro/proxy/vpn/sub/${encodeURIComponent(key)}`;
-  } 
-  // diğerleri → VIP
-  else {
+    res.setHeader("profile-title", "Luxury");
+  } else {
     target = `https://dolphi.online/proxy/vip/sub/${encodeURIComponent(key)}`;
+    res.setHeader("profile-title", "VIP SERVERS");
   }
 
   try {
     const r = await fetch(target, {
-      redirect: "follow",
       headers: {
         "User-Agent": req.headers["user-agent"] || "Mozilla/5.0",
         "Accept": "*/*"
@@ -27,13 +25,12 @@ export default async function handler(req, res) {
 
     const text = await r.text();
 
-    // headerlar (önemli)
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Cache-Control", "no-store");
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("profile-update-interval", "6");
 
-    // subscription info geçirme
+    // ÖNEMLİ: userinfo geçirmeye devam
     const userInfo = r.headers.get("subscription-userinfo");
     if (userInfo) {
       res.setHeader("subscription-userinfo", userInfo);
@@ -41,7 +38,7 @@ export default async function handler(req, res) {
 
     return res.status(r.status).send(text);
 
-  } catch (e) {
+  } catch {
     return res.status(500).send("proxy error");
   }
 }
