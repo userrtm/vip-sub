@@ -1,11 +1,21 @@
 export default async function handler(req, res) {
-  const { key } = req.query;
+  const { source, key } = req.query;
 
-  if (!key) {
-    return res.status(400).send("missing key");
+  if (!key || !source) {
+    return res.status(400).send("missing params");
   }
 
-  const target = `https://dolphi.online/proxy/vip/sub/${encodeURIComponent(key)}`;
+  let target;
+
+  if (source === "vip") {
+    target = `https://dolphi.online/proxy/vip/sub/${encodeURIComponent(key)}`;
+  } 
+  else if (source === "vpn") {
+    target = `https://standartuserrtm.pro/proxy/vpn/sub/${encodeURIComponent(key)}`;
+  } 
+  else {
+    return res.status(400).send("invalid source");
+  }
 
   try {
     const r = await fetch(target, {
@@ -29,6 +39,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(r.status).send(text);
+
   } catch (e) {
     return res.status(500).send("proxy error");
   }
