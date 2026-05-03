@@ -3,7 +3,7 @@ export default async function handler(req, res) {
 
   if (!key) return res.status(400).send("missing key");
 
-  const target = https://standart.lexum.sbs/sub/${encodeURIComponent(key)};
+  const target = `https://standartuserrtm.pro/proxy/vpn/sub/${encodeURIComponent(key)}`;
 
   try {
     const r = await fetch(target, {
