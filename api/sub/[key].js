@@ -103,7 +103,7 @@ function parseUserInfo(userInfo) {
     usedText: formatBytes(used),
     totalText: total > 0 ? formatBytes(total) : "∞",
     percent,
-    expireText: expire > 0 ? formatDate(expire) : "-"
+    expireText: expire > 0 ? formatExpire(expire) : "-"
   };
 }
 
@@ -115,9 +115,20 @@ function formatBytes(bytes) {
   return mb.toFixed(1) + " MB";
 }
 
-function formatDate(timestamp) {
-  const d = new Date(timestamp * 1000);
-  return d.toLocaleDateString("ru-RU");
+function formatExpire(timestamp) {
+  const now = Date.now();
+  const expireMs = timestamp * 1000;
+  const diff = expireMs - now;
+
+  const date = new Date(expireMs).toLocaleDateString("ru-RU");
+
+  if (diff <= 0) return `Gutardy ❌ · ${date}`;
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+
+  if (days > 0) return `${days} gün galdy · ${date}`;
+  return `${hours} sagat galdy · ${date}`;
 }
 
 function escapeHtml(str) {
@@ -148,10 +159,23 @@ body{
   font-family:Arial,sans-serif;
   color:#fff;
   background:
-    radial-gradient(circle at top,#2633a3 0,#07142f 45%,#020617 100%);
+    radial-gradient(circle at 20% 0%,rgba(139,92,246,.55),transparent 30%),
+    radial-gradient(circle at 85% 15%,rgba(59,130,246,.38),transparent 28%),
+    radial-gradient(circle at 50% 100%,rgba(14,165,233,.25),transparent 35%),
+    linear-gradient(145deg,#020617,#0b1438 48%,#11114a);
   padding:16px;
+  overflow-x:hidden;
 }
-.wrap{max-width:520px;margin:0 auto;padding:14px 0 28px}
+body:before{
+  content:"";
+  position:fixed;
+  inset:-40%;
+  background:conic-gradient(from 180deg,transparent,rgba(255,255,255,.10),transparent 20%);
+  animation:spin 13s linear infinite;
+  pointer-events:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wrap{max-width:520px;margin:0 auto;padding:14px 0 28px;position:relative;z-index:1}
 .langs{
   display:flex;
   gap:8px;
@@ -159,53 +183,79 @@ body{
   margin-bottom:18px;
 }
 .langs button{
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.09);
   color:#fff;
   border-radius:14px;
   padding:10px 14px;
   font-weight:800;
+  backdrop-filter:blur(10px);
 }
 .langs button.active{
   background:linear-gradient(135deg,#2563eb,#9333ea);
+  box-shadow:0 0 22px rgba(147,51,234,.55);
 }
 .card{
-  background:rgba(255,255,255,.09);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:28px;
+  position:relative;
+  overflow:hidden;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:30px;
   padding:24px;
-  box-shadow:0 25px 70px rgba(0,0,0,.45);
+  box-shadow:0 25px 80px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.12);
+  backdrop-filter:blur(18px);
+}
+.card:before{
+  content:"";
+  position:absolute;
+  top:-120px;
+  left:-150px;
+  width:160px;
+  height:520px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);
+  transform:rotate(25deg);
+  animation:shine 5s ease-in-out infinite;
+}
+@keyframes shine{
+  0%,35%{left:-180px}
+  70%,100%{left:120%}
 }
 .logo{
-  width:82px;height:82px;
-  border-radius:26px;
+  width:86px;height:86px;
+  border-radius:28px;
   margin:0 auto 16px;
   display:grid;place-items:center;
-  background:linear-gradient(135deg,#2563eb,#a855f7);
-  font-size:34px;
+  background:linear-gradient(135deg,#2563eb,#a855f7,#ec4899);
+  font-size:36px;
   font-weight:900;
+  box-shadow:0 0 35px rgba(168,85,247,.75);
+  animation:float 3s ease-in-out infinite;
 }
-h1{text-align:center;margin:0 0 8px;font-size:30px}
-.desc{text-align:center;color:#cbd5e1;line-height:1.55;margin-bottom:22px}
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255,255,255,.25)}
+.desc{text-align:center;color:#d6def5;line-height:1.55;margin-bottom:22px}
+.userBox,.usageBox{
+  background:rgba(0,0,0,.30);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:24px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
 .userBox{
-  background:rgba(0,0,0,.28);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:22px;
   padding:18px;
   text-align:center;
   margin-bottom:16px;
 }
-.userLabel{font-size:13px;color:#94a3b8;margin-bottom:8px}
+.userLabel{font-size:13px;color:#aab7d8;margin-bottom:8px}
 .username{
-  font-size:25px;
+  font-size:26px;
   font-weight:900;
   cursor:pointer;
 }
-.copyHint{font-size:12px;color:#94a3b8;margin-top:8px}
+.copyHint{font-size:12px;color:#aab7d8;margin-top:8px}
 .usageBox{
-  background:rgba(0,0,0,.28);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:22px;
   padding:16px;
   margin-bottom:22px;
 }
@@ -214,12 +264,12 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
   justify-content:space-between;
   gap:10px;
   font-size:14px;
-  color:#cbd5e1;
+  color:#d6def5;
 }
 .usageTop b{color:white}
 .bar{
-  height:12px;
-  background:rgba(255,255,255,.14);
+  height:13px;
+  background:rgba(255,255,255,.15);
   border-radius:999px;
   overflow:hidden;
   margin:12px 0;
@@ -228,13 +278,19 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
   height:100%;
   background:linear-gradient(90deg,#22c55e,#3b82f6,#a855f7);
   border-radius:999px;
+  box-shadow:0 0 18px rgba(59,130,246,.8);
+  animation:pulseBar 2.4s ease-in-out infinite;
 }
-.sectionTitle{font-size:19px;font-weight:900;margin:22px 0 12px}
+@keyframes pulseBar{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.45)}
+}
+.sectionTitle{font-size:20px;font-weight:900;margin:22px 0 12px}
 .app{
   width:100%;
   border:0;
   color:white;
-  border-radius:22px;
+  border-radius:24px;
   padding:17px;
   margin:12px 0;
   display:flex;
@@ -242,18 +298,21 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
   gap:15px;
   text-align:left;
   cursor:pointer;
+  box-shadow:0 14px 34px rgba(0,0,0,.32);
+  transition:.2s;
 }
+.app:hover{transform:translateY(-2px) scale(1.01)}
 .icon{
   width:58px;height:58px;
   border-radius:18px;
   display:grid;place-items:center;
-  background:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.20);
   font-size:26px;
   font-weight:900;
 }
 .txt{flex:1}
 .title{font-size:20px;font-weight:900}
-.sub{font-size:14px;color:rgba(255,255,255,.82);margin-top:5px}
+.sub{font-size:14px;color:rgba(255,255,255,.84);margin-top:5px}
 .arrow{font-size:34px}
 .hiddify{background:linear-gradient(135deg,#7c3aed,#2563eb)}
 .v2raytun{background:linear-gradient(135deg,#1d4ed8,#2563eb)}
@@ -262,10 +321,10 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
 .happ{background:linear-gradient(135deg,#8b5cf6,#db2777)}
 .qrBtn{
   width:100%;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(0,0,0,.32);
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(0,0,0,.34);
   color:#fff;
-  border-radius:20px;
+  border-radius:22px;
   padding:16px;
   font-size:17px;
   font-weight:900;
@@ -297,6 +356,7 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
   padding:13px 18px;
   border-radius:999px;
   font-weight:900;
+  z-index:99;
 }
 </style>
 </head>
@@ -331,7 +391,7 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
 
       <div class="usageBottom">
         <span>${usage.percent}%</span>
-        <span><span id="expireLabel">Möhleti</span>: ${usage.expireText}</span>
+        <span><span id="expireLabel">Gutarýan möhleti</span>: ${usage.expireText}</span>
       </div>
     </div>
 
@@ -388,7 +448,7 @@ const texts = {
     userLabel:"Ulanyjy ady",
     copyHint:"Adyň üstüne basyň — göçüriler",
     usedLabel:"Ulanylan",
-    expireLabel:"Möhleti",
+    expireLabel:"Gutarýan möhleti",
     appsTitle:"Programma saýlaň",
     hiddifyTitle:"Hiddify'a Goş",
     hiddifySub:"Hiddify programmasynda aç",
@@ -408,7 +468,7 @@ const texts = {
     userLabel:"Kullanıcı adı",
     copyHint:"İsme basın — kopyalanır",
     usedLabel:"Kullanılan",
-    expireLabel:"Bitiş",
+    expireLabel:"Bitiş süresi",
     appsTitle:"Uygulama seçin",
     hiddifyTitle:"Hiddify'a Ekle",
     hiddifySub:"Hiddify uygulamasında aç",
@@ -428,7 +488,7 @@ const texts = {
     userLabel:"Имя пользователя",
     copyHint:"Нажмите на имя — скопируется",
     usedLabel:"Использовано",
-    expireLabel:"Срок",
+    expireLabel:"Осталось",
     appsTitle:"Выберите приложение",
     hiddifyTitle:"Добавить в Hiddify",
     hiddifySub:"Открыть в Hiddify",
@@ -437,7 +497,6 @@ const texts = {
     v2rayngTitle:"Добавить в v2RayNG",
     v2rayngSub:"Открыть в v2RayNG",
     v2boxTitle:"Добавить в V2Box",
-    v2boxSub:"Открыть в V2Box",
     happTitle:"Добавить в Happ",
     happSub:"Открыть в Happ",
     qrBtn:"Показать QR-код",
@@ -472,25 +531,11 @@ function copyName(){
   showToast(texts[lang].copied);
 }
 
-function openHiddify(){
-  location.href = "hiddify://import/" + subUrl + "#Luxury";
-}
-
-function openV2RayTun(){
-  location.href = "v2raytun://import/" + subUrl;
-}
-
-function openV2RayNG(){
-  location.href = "v2rayng://install-sub?url=" + encodeURIComponent(subUrl) + "&name=" + encodeURIComponent("Luxury");
-}
-
-function openV2Box(){
-  location.href = "v2box://install-config?url=" + encodeURIComponent(subUrl);
-}
-
-function openHapp(){
-  location.href = "happ://add/" + subUrl;
-}
+function openHiddify(){ location.href = "hiddify://import/" + subUrl + "#Luxury"; }
+function openV2RayTun(){ location.href = "v2raytun://import/" + subUrl; }
+function openV2RayNG(){ location.href = "v2rayng://install-sub?url=" + encodeURIComponent(subUrl) + "&name=" + encodeURIComponent("Luxury"); }
+function openV2Box(){ location.href = "v2box://install-config?url=" + encodeURIComponent(subUrl); }
+function openHapp(){ location.href = "happ://add/" + subUrl; }
 
 function toggleQr(){
   const box = document.getElementById("qrBox");
