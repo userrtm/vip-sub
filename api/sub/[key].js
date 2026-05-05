@@ -117,18 +117,14 @@ function formatBytes(bytes) {
 }
 
 function formatExpireParts(timestamp) {
-  if (!timestamp) {
-    return { daysLeft: "-", hoursLeft: "-", expireDate: "-" };
-  }
+  if (!timestamp) return { daysLeft: "-", hoursLeft: "-", expireDate: "-" };
 
   const now = Date.now();
   const expireMs = timestamp * 1000;
   const diff = expireMs - now;
   const date = new Date(expireMs).toLocaleDateString("ru-RU");
 
-  if (diff <= 0) {
-    return { daysLeft: "expired", hoursLeft: "0", expireDate: date };
-  }
+  if (diff <= 0) return { daysLeft: "expired", hoursLeft: "0", expireDate: date };
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -163,7 +159,10 @@ body{
   min-height:100vh;
   font-family:Arial,sans-serif;
   color:#fff;
-  background:linear-gradient(145deg,#020617,#081735 45%,#10164d);
+  background:
+    radial-gradient(circle at 20% 0%,rgba(59,130,246,.35),transparent 28%),
+    radial-gradient(circle at 90% 20%,rgba(168,85,247,.35),transparent 30%),
+    linear-gradient(145deg,#020617,#07162f 45%,#11164d);
   padding:16px;
   overflow-x:hidden;
 }
@@ -176,46 +175,41 @@ body{
 }
 .bgText span{
   position:absolute;
-  color:rgba(255,255,255,.045);
-  font-size:54px;
+  color:rgba(255,255,255,.13);
+  text-shadow:0 0 26px rgba(59,130,246,.55);
+  font-size:72px;
   font-weight:900;
-  letter-spacing:4px;
-  animation:moveText 16s linear infinite;
+  letter-spacing:5px;
+  animation:moveText 18s linear infinite;
   white-space:nowrap;
 }
-.bgText span:nth-child(1){top:9%;left:-30%;animation-duration:18s}
-.bgText span:nth-child(2){top:33%;left:-40%;animation-duration:22s}
-.bgText span:nth-child(3){top:58%;left:-35%;animation-duration:20s}
-.bgText span:nth-child(4){top:80%;left:-45%;animation-duration:24s}
+.bgText span:nth-child(1){top:7%;left:-80%;animation-duration:20s}
+.bgText span:nth-child(2){top:28%;left:-95%;animation-duration:24s}
+.bgText span:nth-child(3){top:52%;left:-75%;animation-duration:22s}
+.bgText span:nth-child(4){top:76%;left:-100%;animation-duration:27s}
 @keyframes moveText{
   from{transform:translateX(0)}
-  to{transform:translateX(150vw)}
+  to{transform:translateX(190vw)}
 }
 .lines{
   position:fixed;
   inset:0;
   pointer-events:none;
-  background:
-    linear-gradient(90deg,transparent 0 48%,rgba(59,130,246,.12) 49%,transparent 50%),
-    linear-gradient(0deg,transparent 0 48%,rgba(168,85,247,.10) 49%,transparent 50%);
-  background-size:90px 90px;
-  mask-image:radial-gradient(circle at center,black,transparent 72%);
-  animation:gridMove 9s linear infinite;
   z-index:0;
+  opacity:.9;
+  background:
+    linear-gradient(90deg,transparent 0 47%,rgba(59,130,246,.18) 48%,transparent 50%),
+    linear-gradient(0deg,transparent 0 47%,rgba(168,85,247,.16) 48%,transparent 50%);
+  background-size:72px 72px;
+  mask-image:radial-gradient(circle at center,black,transparent 78%);
+  animation:gridMove 8s linear infinite;
 }
-@keyframes gridMove{
-  to{background-position:90px 90px}
-}
-.wrap{max-width:520px;margin:0 auto;padding:14px 0 28px;position:relative;z-index:1}
-.langs{
-  display:flex;
-  gap:8px;
-  justify-content:center;
-  margin-bottom:18px;
-}
+@keyframes gridMove{to{background-position:72px 72px}}
+.wrap{max-width:520px;margin:0 auto;padding:14px 0 28px;position:relative;z-index:2}
+.langs{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
 .langs button{
-  border:1px solid rgba(255,255,255,.16);
-  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.10);
   color:#fff;
   border-radius:14px;
   padding:10px 14px;
@@ -223,16 +217,40 @@ body{
 }
 .langs button.active{
   background:linear-gradient(135deg,#2563eb,#9333ea);
+  box-shadow:0 0 20px rgba(147,51,234,.55);
 }
 .card{
-  background:rgba(255,255,255,.10);
-  border:1px solid rgba(255,255,255,.15);
+  position:relative;
+  overflow:hidden;
+  background:rgba(15,23,42,.70);
+  border:1px solid rgba(255,255,255,.18);
   border-radius:30px;
   padding:24px;
   box-shadow:0 25px 80px rgba(0,0,0,.50);
-  backdrop-filter:blur(18px);
+  backdrop-filter:blur(9px);
+}
+.card:before{
+  content:"VPN FAST SECURE PREMIUM VPN FAST SECURE PREMIUM";
+  position:absolute;
+  top:40%;
+  left:-40%;
+  width:180%;
+  color:rgba(255,255,255,.055);
+  font-size:46px;
+  font-weight:900;
+  letter-spacing:8px;
+  white-space:nowrap;
+  transform:rotate(-18deg);
+  animation:cardText 18s linear infinite;
+  pointer-events:none;
+}
+@keyframes cardText{
+  from{transform:translateX(-10%) rotate(-18deg)}
+  to{transform:translateX(25%) rotate(-18deg)}
 }
 .logo{
+  position:relative;
+  z-index:1;
   width:86px;height:86px;
   border-radius:28px;
   margin:0 auto 16px;
@@ -240,20 +258,17 @@ body{
   background:linear-gradient(135deg,#2563eb,#a855f7,#ec4899);
   font-size:36px;
   font-weight:900;
-  box-shadow:0 0 35px rgba(168,85,247,.55);
+  box-shadow:0 0 35px rgba(168,85,247,.65);
 }
+h1,.desc,.userBox,.usageBox,.sectionTitle,.app,.qrBtn,.qrBox{position:relative;z-index:1}
 h1{text-align:center;margin:0 0 8px;font-size:32px}
 .desc{text-align:center;color:#d6def5;line-height:1.55;margin-bottom:22px}
 .userBox,.usageBox{
-  background:rgba(0,0,0,.30);
-  border:1px solid rgba(255,255,255,.13);
+  background:rgba(0,0,0,.34);
+  border:1px solid rgba(255,255,255,.15);
   border-radius:24px;
 }
-.userBox{
-  padding:18px;
-  text-align:center;
-  margin-bottom:16px;
-}
+.userBox{padding:18px;text-align:center;margin-bottom:16px}
 .userLabel{font-size:13px;color:#aab7d8;margin-bottom:8px}
 .username{font-size:26px;font-weight:900;cursor:pointer}
 .copyHint{font-size:12px;color:#aab7d8;margin-top:8px}
@@ -278,6 +293,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
   height:100%;
   background:linear-gradient(90deg,#22c55e,#3b82f6,#a855f7);
   border-radius:999px;
+  box-shadow:0 0 20px rgba(59,130,246,.8);
 }
 .sectionTitle{font-size:20px;font-weight:900;margin:22px 0 12px}
 .app{
@@ -322,14 +338,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
   font-weight:900;
   margin-top:18px;
 }
-.qrBox{
-  display:none;
-  margin-top:18px;
-  text-align:center;
-  background:white;
-  padding:16px;
-  border-radius:22px;
-}
+.qrBox{display:none;margin-top:18px;text-align:center;background:white;padding:16px;border-radius:22px}
 .qrBox img{width:230px;height:230px}
 .qrText{color:#0f172a;font-size:12px;word-break:break-all;margin-top:10px}
 .toast{
@@ -379,11 +388,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
         <span id="usedLabel">Ulanylan</span>
         <b>${usage.usedText} / ${usage.totalText}</b>
       </div>
-
-      <div class="bar">
-        <div class="barFill" style="width:${usage.percent}%"></div>
-      </div>
-
+      <div class="bar"><div class="barFill" style="width:${usage.percent}%"></div></div>
       <div class="usageBottom">
         <span>${usage.percent}%</span>
         <span><span id="expireLabel">Gutarýan möhleti</span>: <span id="expireValue"></span></span>
@@ -392,38 +397,13 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
 
     <div class="sectionTitle" id="appsTitle">Programma saýlaň</div>
 
-    <button class="app hiddify" onclick="openHiddify()">
-      <div class="icon">H</div>
-      <div class="txt"><div class="title" id="hiddifyTitle">Hiddify'a Goş</div><div class="sub" id="hiddifySub">Hiddify programmasynda aç</div></div>
-      <div class="arrow">›</div>
-    </button>
-
-    <button class="app v2raytun" onclick="openV2RayTun()">
-      <div class="icon">V2</div>
-      <div class="txt"><div class="title" id="v2raytunTitle">v2RayTun'a Goş</div><div class="sub" id="v2raytunSub">v2RayTun programmasynda aç</div></div>
-      <div class="arrow">›</div>
-    </button>
-
-    <button class="app v2rayng" onclick="openV2RayNG()">
-      <div class="icon">V</div>
-      <div class="txt"><div class="title" id="v2rayngTitle">v2RayNG'ye Goş</div><div class="sub" id="v2rayngSub">v2RayNG programmasynda aç</div></div>
-      <div class="arrow">›</div>
-    </button>
-
-    <button class="app v2box" onclick="openV2Box()">
-      <div class="icon">V²</div>
-      <div class="txt"><div class="title" id="v2boxTitle">V2Box'a Goş</div><div class="sub" id="v2boxSub">V2Box programmasynda aç</div></div>
-      <div class="arrow">›</div>
-    </button>
-
-    <button class="app happ" onclick="openHapp()">
-      <div class="icon">H</div>
-      <div class="txt"><div class="title" id="happTitle">Happ'a Goş</div><div class="sub" id="happSub">Happ programmasynda aç</div></div>
-      <div class="arrow">›</div>
-    </button>
+    <button class="app hiddify" onclick="openHiddify()"><div class="icon">H</div><div class="txt"><div class="title" id="hiddifyTitle">Hiddify'a Goş</div><div class="sub" id="hiddifySub">Hiddify programmasynda aç</div></div><div class="arrow">›</div></button>
+    <button class="app v2raytun" onclick="openV2RayTun()"><div class="icon">V2</div><div class="txt"><div class="title" id="v2raytunTitle">v2RayTun'a Goş</div><div class="sub" id="v2raytunSub">v2RayTun programmasynda aç</div></div><div class="arrow">›</div></button>
+    <button class="app v2rayng" onclick="openV2RayNG()"><div class="icon">V</div><div class="txt"><div class="title" id="v2rayngTitle">v2RayNG'ye Goş</div><div class="sub" id="v2rayngSub">v2RayNG programmasynda aç</div></div><div class="arrow">›</div></button>
+    <button class="app v2box" onclick="openV2Box()"><div class="icon">V²</div><div class="txt"><div class="title" id="v2boxTitle">V2Box'a Goş</div><div class="sub" id="v2boxSub">V2Box programmasynda aç</div></div><div class="arrow">›</div></button>
+    <button class="app happ" onclick="openHapp()"><div class="icon">H</div><div class="txt"><div class="title" id="happTitle">Happ'a Goş</div><div class="sub" id="happSub">Happ programmasynda aç</div></div><div class="arrow">›</div></button>
 
     <button class="qrBtn" onclick="toggleQr()" id="qrBtn">QR kod görkez</button>
-
     <div class="qrBox" id="qrBox">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encUrl}" alt="QR Code">
       <div class="qrText">${safeUrl}</div>
@@ -441,82 +421,15 @@ const hoursLeft = "${usage.hoursLeft}";
 const expireDate = "${usage.expireDate}";
 
 const texts = {
-  tk:{
-    mainDesc:"Subscription linkiňizi aşakdaky programmalara bir basyş bilen goşuň.",
-    userLabel:"Ulanyjy ady",
-    copyHint:"Adyň üstüne basyň — göçüriler",
-    usedLabel:"Ulanylan",
-    expireLabel:"Gutarýan möhleti",
-    appsTitle:"Programma saýlaň",
-    hiddifyTitle:"Hiddify'a Goş",
-    hiddifySub:"Hiddify programmasynda aç",
-    v2raytunTitle:"v2RayTun'a Goş",
-    v2raytunSub:"v2RayTun programmasynda aç",
-    v2rayngTitle:"v2RayNG'ye Goş",
-    v2rayngSub:"v2RayNG programmasynda aç",
-    v2boxTitle:"V2Box'a Goş",
-    v2boxSub:"V2Box programmasynda aç",
-    happTitle:"Happ'a Goş",
-    happSub:"Happ programmasynda aç",
-    qrBtn:"QR kod görkez",
-    copied:"Ulanyjy ady göçürildi",
-    expired:"Gutardy ❌",
-    day:"gün galdy",
-    hour:"sagat galdy"
-  },
-  tr:{
-    mainDesc:"Subscription linkinizi aşağıdaki uygulamalara tek dokunuşla ekleyin.",
-    userLabel:"Kullanıcı adı",
-    copyHint:"İsme basın — kopyalanır",
-    usedLabel:"Kullanılan",
-    expireLabel:"Bitiş süresi",
-    appsTitle:"Uygulama seçin",
-    hiddifyTitle:"Hiddify'a Ekle",
-    hiddifySub:"Hiddify uygulamasında aç",
-    v2raytunTitle:"v2RayTun'a Ekle",
-    v2raytunSub:"v2RayTun uygulamasında aç",
-    v2rayngTitle:"v2RayNG'ye Ekle",
-    v2rayngSub:"v2RayNG uygulamasında aç",
-    v2boxTitle:"V2Box'a Ekle",
-    v2boxSub:"V2Box uygulamasında aç",
-    happTitle:"Happ'a Ekle",
-    happSub:"Happ uygulamasında aç",
-    qrBtn:"QR kodu göster",
-    copied:"Kullanıcı adı kopyalandı",
-    expired:"Süresi bitti ❌",
-    day:"gün kaldı",
-    hour:"saat kaldı"
-  },
-  ru:{
-    mainDesc:"Добавьте subscription ссылку в приложение одним нажатием.",
-    userLabel:"Имя пользователя",
-    copyHint:"Нажмите на имя — скопируется",
-    usedLabel:"Использовано",
-    expireLabel:"Осталось",
-    appsTitle:"Выберите приложение",
-    hiddifyTitle:"Добавить в Hiddify",
-    hiddifySub:"Открыть в Hiddify",
-    v2raytunTitle:"Добавить в v2RayTun",
-    v2raytunSub:"Открыть в v2RayTun",
-    v2rayngTitle:"Добавить в v2RayNG",
-    v2rayngSub:"Открыть в v2RayNG",
-    v2boxTitle:"Добавить в V2Box",
-    v2boxSub:"Открыть в V2Box",
-    happTitle:"Добавить в Happ",
-    happSub:"Открыть в Happ",
-    qrBtn:"Показать QR-код",
-    copied:"Имя пользователя скопировано",
-    expired:"Истекло ❌",
-    day:"дней осталось",
-    hour:"часов осталось"
-  }
+  tk:{mainDesc:"Subscription linkiňizi aşakdaky programmalara bir basyş bilen goşuň.",userLabel:"Ulanyjy ady",copyHint:"Adyň üstüne basyň — göçüriler",usedLabel:"Ulanylan",expireLabel:"Gutarýan möhleti",appsTitle:"Programma saýlaň",hiddifyTitle:"Hiddify'a Goş",hiddifySub:"Hiddify programmasynda aç",v2raytunTitle:"v2RayTun'a Goş",v2raytunSub:"v2RayTun programmasynda aç",v2rayngTitle:"v2RayNG'ye Goş",v2rayngSub:"v2RayNG programmasynda aç",v2boxTitle:"V2Box'a Goş",v2boxSub:"V2Box programmasynda aç",happTitle:"Happ'a Goş",happSub:"Happ programmasynda aç",qrBtn:"QR kod görkez",copied:"Ulanyjy ady göçürildi",expired:"Gutardy ❌",day:"gün galdy",hour:"sagat galdy"},
+  tr:{mainDesc:"Subscription linkinizi aşağıdaki uygulamalara tek dokunuşla ekleyin.",userLabel:"Kullanıcı adı",copyHint:"İsme basın — kopyalanır",usedLabel:"Kullanılan",expireLabel:"Bitiş süresi",appsTitle:"Uygulama seçin",hiddifyTitle:"Hiddify'a Ekle",hiddifySub:"Hiddify uygulamasında aç",v2raytunTitle:"v2RayTun'a Ekle",v2raytunSub:"v2RayTun uygulamasında aç",v2rayngTitle:"v2RayNG'ye Ekle",v2rayngSub:"v2RayNG uygulamasında aç",v2boxTitle:"V2Box'a Ekle",v2boxSub:"V2Box uygulamasında aç",happTitle:"Happ'a Ekle",happSub:"Happ uygulamasında aç",qrBtn:"QR kodu göster",copied:"Kullanıcı adı kopyalandı",expired:"Süresi bitti ❌",day:"gün kaldı",hour:"saat kaldı"},
+  ru:{mainDesc:"Добавьте subscription ссылку в приложение одним нажатием.",userLabel:"Имя пользователя",copyHint:"Нажмите на имя — скопируется",usedLabel:"Использовано",expireLabel:"Осталось",appsTitle:"Выберите приложение",hiddifyTitle:"Добавить в Hiddify",hiddifySub:"Открыть в Hiddify",v2raytunTitle:"Добавить в v2RayTun",v2raytunSub:"Открыть в v2RayTun",v2rayngTitle:"Добавить в v2RayNG",v2rayngSub:"Открыть в v2RayNG",v2boxTitle:"Добавить в V2Box",v2boxSub:"Открыть в V2Box",happTitle:"Добавить в Happ",happSub:"Открыть в Happ",qrBtn:"Показать QR-код",copied:"Имя пользователя скопировано",expired:"Истекло ❌",day:"дней осталось",hour:"часов осталось"}
 };
 
 let lang = localStorage.getItem("lang") || "tk";
 
 function makeExpireText(){
   const t = texts[lang];
-
   if (daysLeft === "expired") return t.expired + " · " + expireDate;
   if (daysLeft !== "-" && Number(daysLeft) > 0) return daysLeft + " " + t.day + " · " + expireDate;
   if (hoursLeft !== "-") return hoursLeft + " " + t.hour + " · " + expireDate;
@@ -534,7 +447,6 @@ function setLang(l){
     const el = document.getElementById(k);
     if (el) el.innerText = t[k];
   }
-
   document.getElementById("expireValue").innerText = makeExpireText();
 }
 
