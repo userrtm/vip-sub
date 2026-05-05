@@ -21,8 +21,22 @@ export default async function handler(req, res) {
 
   if (isBrowser) {
     const username = decodeNameFromKey(key) || "Luxury User";
+    let usage = parseUserInfo(null);
+
+    try {
+      const infoReq = await fetch(target, {
+        redirect: "follow",
+        headers: {
+          "User-Agent": ua || "Mozilla/5.0",
+          "Accept": "*/*"
+        }
+      });
+
+      usage = parseUserInfo(infoReq.headers.get("subscription-userinfo"));
+    } catch {}
+
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    return res.status(200).send(getHtml(username, subUrl));
+    return res.status(200).send(getHtml(username, subUrl, usage));
   }
 
   try {
@@ -61,6 +75,51 @@ function decodeNameFromKey(key) {
   }
 }
 
+function parseUserInfo(userInfo) {
+  if (!userInfo) {
+    return {
+      usedText: "0 MB",
+      totalText: "∞",
+      percent: "0",
+      expireText: "-"
+    };
+  }
+
+  const data = {};
+  userInfo.split(";").forEach(part => {
+    const [k, v] = part.trim().split("=");
+    data[k] = Number(v);
+  });
+
+  const upload = data.upload || 0;
+  const download = data.download || 0;
+  const total = data.total || 0;
+  const expire = data.expire || 0;
+  const used = upload + download;
+
+  const percent = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : "0";
+
+  return {
+    usedText: formatBytes(used),
+    totalText: total > 0 ? formatBytes(total) : "∞",
+    percent,
+    expireText: expire > 0 ? formatDate(expire) : "-"
+  };
+}
+
+function formatBytes(bytes) {
+  if (!bytes || bytes <= 0) return "0 MB";
+  const gb = bytes / 1024 / 1024 / 1024;
+  if (gb >= 1) return gb.toFixed(2) + " GB";
+  const mb = bytes / 1024 / 1024;
+  return mb.toFixed(1) + " MB";
+}
+
+function formatDate(timestamp) {
+  const d = new Date(timestamp * 1000);
+  return d.toLocaleDateString("ru-RU");
+}
+
 function escapeHtml(str) {
   return String(str)
     .replaceAll("&", "&amp;")
@@ -70,7 +129,7 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-function getHtml(username, subUrl) {
+function getHtml(username, subUrl, usage) {
   const safeName = escapeHtml(username);
   const safeUrl = escapeHtml(subUrl);
   const encUrl = encodeURIComponent(subUrl);
@@ -134,7 +193,7 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
   border-radius:22px;
   padding:18px;
   text-align:center;
-  margin-bottom:20px;
+  margin-bottom:16px;
 }
 .userLabel{font-size:13px;color:#94a3b8;margin-bottom:8px}
 .username{
@@ -143,6 +202,33 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
   cursor:pointer;
 }
 .copyHint{font-size:12px;color:#94a3b8;margin-top:8px}
+.usageBox{
+  background:rgba(0,0,0,.28);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:22px;
+  padding:16px;
+  margin-bottom:22px;
+}
+.usageTop,.usageBottom{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:14px;
+  color:#cbd5e1;
+}
+.usageTop b{color:white}
+.bar{
+  height:12px;
+  background:rgba(255,255,255,.14);
+  border-radius:999px;
+  overflow:hidden;
+  margin:12px 0;
+}
+.barFill{
+  height:100%;
+  background:linear-gradient(90deg,#22c55e,#3b82f6,#a855f7);
+  border-radius:999px;
+}
 .sectionTitle{font-size:19px;font-weight:900;margin:22px 0 12px}
 .app{
   width:100%;
@@ -224,13 +310,29 @@ h1{text-align:center;margin:0 0 8px;font-size:30px}
 
   <div class="card">
     <div class="logo">U</div>
-    <h1 id="mainTitle">Luxury VPN</h1>
+    <h1>Luxury VPN</h1>
     <div class="desc" id="mainDesc">Subscription linkiňizi aşakdaky programmalara bir basyş bilen goşuň.</div>
 
     <div class="userBox">
       <div class="userLabel" id="userLabel">Ulanyjy ady</div>
       <div class="username" onclick="copyName()">${safeName}</div>
       <div class="copyHint" id="copyHint">Adyň üstüne basyň — göçüriler</div>
+    </div>
+
+    <div class="usageBox">
+      <div class="usageTop">
+        <span id="usedLabel">Ulanylan</span>
+        <b>${usage.usedText} / ${usage.totalText}</b>
+      </div>
+
+      <div class="bar">
+        <div class="barFill" style="width:${usage.percent}%"></div>
+      </div>
+
+      <div class="usageBottom">
+        <span>${usage.percent}%</span>
+        <span><span id="expireLabel">Möhleti</span>: ${usage.expireText}</span>
+      </div>
     </div>
 
     <div class="sectionTitle" id="appsTitle">Programma saýlaň</div>
@@ -285,6 +387,8 @@ const texts = {
     mainDesc:"Subscription linkiňizi aşakdaky programmalara bir basyş bilen goşuň.",
     userLabel:"Ulanyjy ady",
     copyHint:"Adyň üstüne basyň — göçüriler",
+    usedLabel:"Ulanylan",
+    expireLabel:"Möhleti",
     appsTitle:"Programma saýlaň",
     hiddifyTitle:"Hiddify'a Goş",
     hiddifySub:"Hiddify programmasynda aç",
@@ -303,6 +407,8 @@ const texts = {
     mainDesc:"Subscription linkinizi aşağıdaki uygulamalara tek dokunuşla ekleyin.",
     userLabel:"Kullanıcı adı",
     copyHint:"İsme basın — kopyalanır",
+    usedLabel:"Kullanılan",
+    expireLabel:"Bitiş",
     appsTitle:"Uygulama seçin",
     hiddifyTitle:"Hiddify'a Ekle",
     hiddifySub:"Hiddify uygulamasında aç",
@@ -321,6 +427,8 @@ const texts = {
     mainDesc:"Добавьте subscription ссылку в приложение одним нажатием.",
     userLabel:"Имя пользователя",
     copyHint:"Нажмите на имя — скопируется",
+    usedLabel:"Использовано",
+    expireLabel:"Срок",
     appsTitle:"Выберите приложение",
     hiddifyTitle:"Добавить в Hiddify",
     hiddifySub:"Открыть в Hiddify",
