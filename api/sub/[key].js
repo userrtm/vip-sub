@@ -81,7 +81,9 @@ function parseUserInfo(userInfo) {
       usedText: "0 MB",
       totalText: "∞",
       percent: "0",
-      expireText: "-"
+      daysLeft: "-",
+      hoursLeft: "-",
+      expireDate: "-"
     };
   }
 
@@ -96,14 +98,13 @@ function parseUserInfo(userInfo) {
   const total = data.total || 0;
   const expire = data.expire || 0;
   const used = upload + download;
-
   const percent = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : "0";
 
   return {
     usedText: formatBytes(used),
     totalText: total > 0 ? formatBytes(total) : "∞",
     percent,
-    expireText: expire > 0 ? formatExpire(expire) : "-"
+    ...formatExpireParts(expire)
   };
 }
 
@@ -115,20 +116,24 @@ function formatBytes(bytes) {
   return mb.toFixed(1) + " MB";
 }
 
-function formatExpire(timestamp) {
+function formatExpireParts(timestamp) {
+  if (!timestamp) {
+    return { daysLeft: "-", hoursLeft: "-", expireDate: "-" };
+  }
+
   const now = Date.now();
   const expireMs = timestamp * 1000;
   const diff = expireMs - now;
-
   const date = new Date(expireMs).toLocaleDateString("ru-RU");
 
-  if (diff <= 0) return `Gutardy ❌ · ${date}`;
+  if (diff <= 0) {
+    return { daysLeft: "expired", hoursLeft: "0", expireDate: date };
+  }
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
 
-  if (days > 0) return `${days} gün galdy · ${date}`;
-  return `${hours} sagat galdy · ${date}`;
+  return { daysLeft: String(days), hoursLeft: String(hours), expireDate: date };
 }
 
 function escapeHtml(str) {
@@ -158,23 +163,49 @@ body{
   min-height:100vh;
   font-family:Arial,sans-serif;
   color:#fff;
-  background:
-    radial-gradient(circle at 20% 0%,rgba(139,92,246,.55),transparent 30%),
-    radial-gradient(circle at 85% 15%,rgba(59,130,246,.38),transparent 28%),
-    radial-gradient(circle at 50% 100%,rgba(14,165,233,.25),transparent 35%),
-    linear-gradient(145deg,#020617,#0b1438 48%,#11114a);
+  background:linear-gradient(145deg,#020617,#081735 45%,#10164d);
   padding:16px;
   overflow-x:hidden;
 }
-body:before{
-  content:"";
+.bgText{
   position:fixed;
-  inset:-40%;
-  background:conic-gradient(from 180deg,transparent,rgba(255,255,255,.10),transparent 20%);
-  animation:spin 13s linear infinite;
+  inset:0;
   pointer-events:none;
+  overflow:hidden;
+  z-index:0;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
+.bgText span{
+  position:absolute;
+  color:rgba(255,255,255,.045);
+  font-size:54px;
+  font-weight:900;
+  letter-spacing:4px;
+  animation:moveText 16s linear infinite;
+  white-space:nowrap;
+}
+.bgText span:nth-child(1){top:9%;left:-30%;animation-duration:18s}
+.bgText span:nth-child(2){top:33%;left:-40%;animation-duration:22s}
+.bgText span:nth-child(3){top:58%;left:-35%;animation-duration:20s}
+.bgText span:nth-child(4){top:80%;left:-45%;animation-duration:24s}
+@keyframes moveText{
+  from{transform:translateX(0)}
+  to{transform:translateX(150vw)}
+}
+.lines{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent 0 48%,rgba(59,130,246,.12) 49%,transparent 50%),
+    linear-gradient(0deg,transparent 0 48%,rgba(168,85,247,.10) 49%,transparent 50%);
+  background-size:90px 90px;
+  mask-image:radial-gradient(circle at center,black,transparent 72%);
+  animation:gridMove 9s linear infinite;
+  z-index:0;
+}
+@keyframes gridMove{
+  to{background-position:90px 90px}
+}
 .wrap{max-width:520px;margin:0 auto;padding:14px 0 28px;position:relative;z-index:1}
 .langs{
   display:flex;
@@ -184,41 +215,22 @@ body:before{
 }
 .langs button{
   border:1px solid rgba(255,255,255,.16);
-  background:rgba(255,255,255,.09);
+  background:rgba(255,255,255,.08);
   color:#fff;
   border-radius:14px;
   padding:10px 14px;
   font-weight:800;
-  backdrop-filter:blur(10px);
 }
 .langs button.active{
   background:linear-gradient(135deg,#2563eb,#9333ea);
-  box-shadow:0 0 22px rgba(147,51,234,.55);
 }
 .card{
-  position:relative;
-  overflow:hidden;
   background:rgba(255,255,255,.10);
   border:1px solid rgba(255,255,255,.15);
   border-radius:30px;
   padding:24px;
-  box-shadow:0 25px 80px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.12);
+  box-shadow:0 25px 80px rgba(0,0,0,.50);
   backdrop-filter:blur(18px);
-}
-.card:before{
-  content:"";
-  position:absolute;
-  top:-120px;
-  left:-150px;
-  width:160px;
-  height:520px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);
-  transform:rotate(25deg);
-  animation:shine 5s ease-in-out infinite;
-}
-@keyframes shine{
-  0%,35%{left:-180px}
-  70%,100%{left:120%}
 }
 .logo{
   width:86px;height:86px;
@@ -228,20 +240,14 @@ body:before{
   background:linear-gradient(135deg,#2563eb,#a855f7,#ec4899);
   font-size:36px;
   font-weight:900;
-  box-shadow:0 0 35px rgba(168,85,247,.75);
-  animation:float 3s ease-in-out infinite;
+  box-shadow:0 0 35px rgba(168,85,247,.55);
 }
-@keyframes float{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-8px)}
-}
-h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255,255,255,.25)}
+h1{text-align:center;margin:0 0 8px;font-size:32px}
 .desc{text-align:center;color:#d6def5;line-height:1.55;margin-bottom:22px}
 .userBox,.usageBox{
   background:rgba(0,0,0,.30);
   border:1px solid rgba(255,255,255,.13);
   border-radius:24px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
 }
 .userBox{
   padding:18px;
@@ -249,16 +255,9 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
   margin-bottom:16px;
 }
 .userLabel{font-size:13px;color:#aab7d8;margin-bottom:8px}
-.username{
-  font-size:26px;
-  font-weight:900;
-  cursor:pointer;
-}
+.username{font-size:26px;font-weight:900;cursor:pointer}
 .copyHint{font-size:12px;color:#aab7d8;margin-top:8px}
-.usageBox{
-  padding:16px;
-  margin-bottom:22px;
-}
+.usageBox{padding:16px;margin-bottom:22px}
 .usageTop,.usageBottom{
   display:flex;
   justify-content:space-between;
@@ -266,6 +265,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
   font-size:14px;
   color:#d6def5;
 }
+.usageBottom{flex-wrap:wrap}
 .usageTop b{color:white}
 .bar{
   height:13px;
@@ -278,12 +278,6 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
   height:100%;
   background:linear-gradient(90deg,#22c55e,#3b82f6,#a855f7);
   border-radius:999px;
-  box-shadow:0 0 18px rgba(59,130,246,.8);
-  animation:pulseBar 2.4s ease-in-out infinite;
-}
-@keyframes pulseBar{
-  0%,100%{filter:brightness(1)}
-  50%{filter:brightness(1.45)}
 }
 .sectionTitle{font-size:20px;font-weight:900;margin:22px 0 12px}
 .app{
@@ -299,9 +293,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
   text-align:left;
   cursor:pointer;
   box-shadow:0 14px 34px rgba(0,0,0,.32);
-  transition:.2s;
 }
-.app:hover{transform:translateY(-2px) scale(1.01)}
 .icon{
   width:58px;height:58px;
   border-radius:18px;
@@ -339,12 +331,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
   border-radius:22px;
 }
 .qrBox img{width:230px;height:230px}
-.qrText{
-  color:#0f172a;
-  font-size:12px;
-  word-break:break-all;
-  margin-top:10px;
-}
+.qrText{color:#0f172a;font-size:12px;word-break:break-all;margin-top:10px}
 .toast{
   display:none;
   position:fixed;
@@ -361,6 +348,14 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
 </style>
 </head>
 <body>
+<div class="bgText">
+  <span>VPN • FAST • SECURE • USERRTM</span>
+  <span>PREMIUM VPN • LUXURY ACCESS</span>
+  <span>SECURE CONNECTION • FAST SERVER</span>
+  <span>USERRTM SERVERS • VPN • PREMIUM</span>
+</div>
+<div class="lines"></div>
+
 <div class="wrap">
   <div class="langs">
     <button id="tkBtn" onclick="setLang('tk')" class="active">Türkmençe</button>
@@ -391,7 +386,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
 
       <div class="usageBottom">
         <span>${usage.percent}%</span>
-        <span><span id="expireLabel">Gutarýan möhleti</span>: ${usage.expireText}</span>
+        <span><span id="expireLabel">Gutarýan möhleti</span>: <span id="expireValue"></span></span>
       </div>
     </div>
 
@@ -441,6 +436,9 @@ h1{text-align:center;margin:0 0 8px;font-size:32px;text-shadow:0 0 24px rgba(255
 <script>
 const subUrl = "${safeUrl}";
 const username = "${safeName}";
+const daysLeft = "${usage.daysLeft}";
+const hoursLeft = "${usage.hoursLeft}";
+const expireDate = "${usage.expireDate}";
 
 const texts = {
   tk:{
@@ -461,7 +459,10 @@ const texts = {
     happTitle:"Happ'a Goş",
     happSub:"Happ programmasynda aç",
     qrBtn:"QR kod görkez",
-    copied:"Ulanyjy ady göçürildi"
+    copied:"Ulanyjy ady göçürildi",
+    expired:"Gutardy ❌",
+    day:"gün galdy",
+    hour:"sagat galdy"
   },
   tr:{
     mainDesc:"Subscription linkinizi aşağıdaki uygulamalara tek dokunuşla ekleyin.",
@@ -481,7 +482,10 @@ const texts = {
     happTitle:"Happ'a Ekle",
     happSub:"Happ uygulamasında aç",
     qrBtn:"QR kodu göster",
-    copied:"Kullanıcı adı kopyalandı"
+    copied:"Kullanıcı adı kopyalandı",
+    expired:"Süresi bitti ❌",
+    day:"gün kaldı",
+    hour:"saat kaldı"
   },
   ru:{
     mainDesc:"Добавьте subscription ссылку в приложение одним нажатием.",
@@ -497,14 +501,27 @@ const texts = {
     v2rayngTitle:"Добавить в v2RayNG",
     v2rayngSub:"Открыть в v2RayNG",
     v2boxTitle:"Добавить в V2Box",
+    v2boxSub:"Открыть в V2Box",
     happTitle:"Добавить в Happ",
     happSub:"Открыть в Happ",
     qrBtn:"Показать QR-код",
-    copied:"Имя пользователя скопировано"
+    copied:"Имя пользователя скопировано",
+    expired:"Истекло ❌",
+    day:"дней осталось",
+    hour:"часов осталось"
   }
 };
 
 let lang = localStorage.getItem("lang") || "tk";
+
+function makeExpireText(){
+  const t = texts[lang];
+
+  if (daysLeft === "expired") return t.expired + " · " + expireDate;
+  if (daysLeft !== "-" && Number(daysLeft) > 0) return daysLeft + " " + t.day + " · " + expireDate;
+  if (hoursLeft !== "-") return hoursLeft + " " + t.hour + " · " + expireDate;
+  return "-";
+}
 
 function setLang(l){
   lang = l;
@@ -517,6 +534,8 @@ function setLang(l){
     const el = document.getElementById(k);
     if (el) el.innerText = t[k];
   }
+
+  document.getElementById("expireValue").innerText = makeExpireText();
 }
 
 function showToast(msg){
