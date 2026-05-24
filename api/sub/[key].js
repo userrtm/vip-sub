@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("profile-update-interval", "6");
-    res.setHeader("profile-title", "Luxury");
+    res.setHeader("profile-title", "Standart");
 
     const userInfo = r.headers.get("subscription-userinfo");
     if (userInfo) res.setHeader("subscription-userinfo", userInfo);
