@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const isBrowser = accept.includes("text/html") && !isApp;
 
   if (isBrowser) {
-    const username = decodeNameFromKey(key) || "STANDART User";
+    const username = decodeNameFromKey(key) || "Luxury User";
     let usage = parseUserInfo(null);
 
     try {
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("profile-update-interval", "6");
-    res.setHeader("profile-title", "STANDART");
+    res.setHeader("profile-title", "Standart");
 
     const userInfo = r.headers.get("subscription-userinfo");
     if (userInfo) res.setHeader("subscription-userinfo", userInfo);
@@ -151,7 +151,7 @@ function getHtml(username, subUrl, usage) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>STANDART</title>
+<title>Standart</title>
 <style>
 *{box-sizing:border-box}
 body{
@@ -359,7 +359,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
 <body>
 <div class="bgText">
   <span>VPN • FAST • SECURE • USERRTM</span>
-  <span>PREMIUM VPN • STANDART ACCESS</span>
+  <span>PREMIUM VPN • LUXURY ACCESS</span>
   <span>SECURE CONNECTION • FAST SERVER</span>
   <span>USERRTM SERVERS • VPN • PREMIUM</span>
 </div>
@@ -374,7 +374,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
 
   <div class="card">
     <div class="logo">U</div>
-    <h1>STANDART VPN</h1>
+    <h1>Luxury VPN</h1>
     <div class="desc" id="mainDesc">Subscription linkiňizi aşakdaky programmalara bir basyş bilen goşuň.</div>
 
     <div class="userBox">
