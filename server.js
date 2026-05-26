@@ -3,7 +3,7 @@ import express from "express";
 const app = express();
 
 app.get("/", (req, res) => {
-  res.type("text/plain").send("UserrTM SERVERS proxy is running");
+  res.type("text/plain").send("Standart proxy is running");
 });
 
 app.get("/api/sub/:key", async (req, res) => {
@@ -28,7 +28,7 @@ app.get("/api/sub/:key", async (req, res) => {
   const isBrowser = accept.includes("text/html") && !isApp;
 
   if (isBrowser) {
-    const username = decodeNameFromKey(key) || "UserrTM SERVERS User";
+    const username = decodeNameFromKey(key) || "Standart User";
     let usage = parseUserInfo(null);
 
     try {
@@ -62,7 +62,7 @@ app.get("/api/sub/:key", async (req, res) => {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("profile-update-interval", "6");
-    res.setHeader("profile-title", "UserrTM SERVERS");
+    res.setHeader("profile-title", "Standart");
 
     const userInfo = r.headers.get("subscription-userinfo");
     if (userInfo) res.setHeader("subscription-userinfo", userInfo);
@@ -159,7 +159,7 @@ function getHtml(username, subUrl, usage) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>UserrTM SERVERS</title>
+<title>Standart</title>
 <style>
 *{box-sizing:border-box}
 body{
@@ -263,7 +263,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
   <span>VPN • FAST • SECURE • USERRTM</span>
   <span>PREMIUM VPN • LUXURY ACCESS</span>
   <span>SECURE CONNECTION • FAST SERVER</span>
-  <span>USERRTM SERVERS • VPN • PREMIUM</span>
+  <span>Standart • VPN • PREMIUM</span>
 </div>
 <div class="lines"></div>
 
@@ -276,7 +276,7 @@ h1{text-align:center;margin:0 0 8px;font-size:32px}
 
   <div class="card">
     <div class="logo">U</div>
-    <h1>UserrTM SERVERS</h1>
+    <h1>Standart</h1>
     <div class="desc" id="mainDesc">Subscription linkiňizi aşakdaky programmalara bir basyş bilen goşuň.</div>
 
     <div class="userBox">
@@ -361,9 +361,9 @@ function copyName(){
   showToast(texts[lang].copied);
 }
 
-function openHiddify(){ location.href = "hiddify://import/" + subUrl + "#UserrTM SERVERS"; }
+function openHiddify(){ location.href = "hiddify://import/" + subUrl + "#Standart"; }
 function openV2RayTun(){ location.href = "v2raytun://import/" + subUrl; }
-function openV2RayNG(){ location.href = "v2rayng://install-sub?url=" + encodeURIComponent(subUrl) + "&name=" + encodeURIComponent("UserrTM SERVERS"); }
+function openV2RayNG(){ location.href = "v2rayng://install-sub?url=" + encodeURIComponent(subUrl) + "&name=" + encodeURIComponent("Standart"); }
 function openV2Box(){ location.href = "v2box://install-config?url=" + encodeURIComponent(subUrl); }
 function openHapp(){ location.href = "happ://add/" + subUrl; }
 
@@ -380,5 +380,5 @@ setLang(lang);
 
 const port = process.env.PORT || 8080;
 app.listen(port, "0.0.0.0", () => {
-  console.log("UserrTM SERVERS running on port " + port);
+  console.log("Standart running on port " + port);
 });
